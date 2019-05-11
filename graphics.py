@@ -7,15 +7,20 @@ from math import sqrt, ceil
 
 def getChild(A, B):
     #return (A[0], B[1])
-    return ( (A[0]+B[0])//2, (A[1]+B[1])//2 )
+    x = (A[0]+B[0])//2
+    y = (A[1]+B[1])//2
+    z = Z[x][y]
+    return (x, y, z) #Melhores formas de gerar os filhos???? Duvida!!
 
 # Pegando parametros
-heightmap_size = 1200 #int(input('Tamanho do mapa:'))
+heightmap_size = 9000 #int(input('Tamanho do mapa:'))
 max_iterations = 1000 #int(input('Numero maximo de iterações:))
-pop_size = 100#int(input('Tamanho da População: '))
-fittest_selection = 40#int(input('Quantos se reproduzirão por geração: '))
-mutation_chance = 1#int(input('Chance de Mutação(%): '))
-crossover_por_geracao = 10#int(input('Quantos crossover por geracao(%): '))
+pop_size = 30#int(input('Tamanho da População: '))
+fittest_selection = 40#int(input('Quantos se reproduzirão por geração: ')) QUAL O TAMANHO DA POPULAÇAO EXEMPLO????
+fittest_selection = int(pop_size*fittest_selection/100)
+mutation_chance = 5#int(input('Chance de Mutação(%): '))   CHANCE DE MUTAÇÃO BOA???
+crossover_por_geracao = 50#int(input('Quantos crossover por geracao(%): '))
+crossover_por_geracao = int(pop_size*crossover_por_geracao/100)
 
 # Inventando um heightmap
 X = np.arange(0, heightmap_size, 1)
@@ -33,47 +38,42 @@ plt.show()
 # GA
 History = []
 children = []
+childrenx = []
+childreny = []
 for _ in range(pop_size):
-    children.append((np.random.randint(heightmap_size), np.random.randint(heightmap_size)))
+    x = np.random.randint(heightmap_size)
+    y = np.random.randint(heightmap_size)
+    z = Z[x][y]
+    childrenx.append(x)
+    childreny.append(y)
+    children.append((x, y, z))
+
 ax = plt.figure()
 plt.title('Primeira geração')
 p = plt.imshow(Z, cmap=cm.viridis)
 plt.colorbar(p)
-childrenx = []
-childreny = []
-for child in children:
-    childrenx.append(child[0])
-    childreny.append(child[1])
 marker_size = 10
 plt.scatter(childrenx, childreny, marker_size, c='r')
 plt.show()
+
 for itt in range(max_iterations):
     # Survival of the fittest
-    z_values = []
-    [z_values.append(Z[k[0]][k[1]]) for k in children]
-    soma = sum(z_values)
-    zval = np.array(z_values)
-    zval /= soma
-    idx = np.random.choice(len(children), size=fittest_selection, p=zval)
-    fittest = np.array(children)[idx]
-    z_values_fittest = np.array(z_values)[idx]
-
-    index_of_fittest = np.where(z_values_fittest == np.amax(z_values_fittest))
-    fitboy = fittest[index_of_fittest[0]][0]
-    maxfit = z_values_fittest[index_of_fittest[0]][0]
-    History.append([fitboy[0], fitboy[1], maxfit])
+    children = sorted(children, key=lambda x: x[2])
+    fittest = children[fittest_selection:]
+    childrencopy = children
+    History.append(fittest[-1])
 
     # Gerando novas criancas
     children = []
     [children.append(fitboy) for fitboy in fittest] #fittest vai direto pra prox geracao
-    for _ in range(crossover_por_geracao): # quem faz crossover mistura os pais
-        children.append(getChild(fittest[np.random.randint(fittest_selection)], fittest[np.random.randint(fittest_selection)]))
-    for i in range(len(children)): # mutacao
+    for i in range(crossover_por_geracao): # quem faz crossover mistura os pais
+        children.append(getChild(fittest[-i], fittest[-i-1]))
+    for i in range(len(children)): # mutacao, modelo de mutaçao eh bom o suficiente??? Duvida
         if np.random.randint(100) < mutation_chance:
             child = children.pop(i)
-            children.append((child[1], child[0]))
-    for _ in range(pop_size-len(children)): # completa ate pop_size
-        children.append((np.random.randint(heightmap_size), np.random.randint(heightmap_size)))
+            children.append((child[1], child[0], Z[child[1]][child[0]]))
+    for i in range(pop_size-len(children)): # completa ate pop_size, DUVIDA completo com aleatorios mesmo ou usar parametros e probabilidade pra gerar
+        children.append(childrencopy[i])
     if itt == max_iterations-1:
         ax = plt.figure()
         plt.title('Última geração')
@@ -97,13 +97,21 @@ plt.colorbar(p)
 childrenx = []
 childreny = []
 contador = []
+childrenz = []
 contadorr = 0
+contadorsingle = []
+i = 0
 for fitboy in History:
     childrenx.append(fitboy[0])
     childreny.append(fitboy[1])
+    childrenz.append(fitboy[2])
     contador.append(contadorr)
-    print(fitboy[2])
+    contadorsingle.append(i)
+    i += 1
     contadorr += 5
 marker_size = 10
 plt.scatter(childrenx, childreny, marker_size, c=contador, cmap=cm.coolwarm)
+plt.show()
+
+plt.plot(contadorsingle[:30],childrenz[:30])
 plt.show()
