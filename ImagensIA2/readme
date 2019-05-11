@@ -1,0 +1,15 @@
+11: Iterações 1000
+    População 30
+    mutation_chance 5
+
+111: Iterações 1000
+     População 30
+     mutation_chance 10
+
+22:  Iterações 2000
+     População 15
+     mutation_chance 5
+
+3:   Iterações 2000
+     População 15
+     mutation_chance 2

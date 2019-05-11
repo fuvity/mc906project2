@@ -18,7 +18,7 @@ max_iterations = 1000 #int(input('Numero maximo de iterações:))
 pop_size = 30#int(input('Tamanho da População: '))
 fittest_selection = 40#int(input('Quantos se reproduzirão por geração: '))
 fittest_selection = int(pop_size*fittest_selection/100)
-mutation_chance = 5#int(input('Chance de Mutação(%): '))
+mutation_chance = 10#int(input('Chance de Mutação(%): '))
 crossover_por_geracao = 50#int(input('Quantos crossover por geracao(%): '))
 crossover_por_geracao = int(pop_size*crossover_por_geracao/100)
 
