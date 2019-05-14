@@ -22,9 +22,10 @@ fittest_selection = int(pop_size*fittest_selection/100)
 mutation_chance = 10#int(input('Chance de Mutação(%): '))
 crossover_por_geracao = 50#int(input('Quantos crossover por geracao(%): '))
 crossover_por_geracao = int(pop_size*crossover_por_geracao/100)
-selection_method = 2 #1 = escolhe os maiores. 2 = probabilistico
+selection_method = 1 #1 = escolhe os maiores. 2 = probabilistico
 crossover_method = 1 #1 = escolhe media entre pontos, 2 = pega uma coordenada de cada
 mutation_method = 1 #1 = troca coordenadas, 2 = divide coordenadas por 2
+choice_stop = 1 #1 = max iterations, 2 = std dev. tem de ser 15% do inicial
 
 # Inventando um heightmap
 X = np.arange(0, heightmap_size, 1)
@@ -44,12 +45,14 @@ History = []
 children = []
 childrenx = []
 childreny = []
+childrenz = []
 for _ in range(pop_size):
     x = np.random.randint(heightmap_size)
     y = np.random.randint(heightmap_size)
     z = Z[x][y]
     childrenx.append(x)
     childreny.append(y)
+    childrenz.append(z)
     children.append((x, y, z))
 
 ax = plt.figure()
@@ -60,7 +63,15 @@ marker_size = 10
 plt.scatter(childrenx, childreny, marker_size, c='r')
 plt.show()
 
-for itt in range(max_iterations):
+if choice_stop == 1:
+    itt = 0 
+    condition = 'itt < max_iterations'
+else:
+    deviation = np.std(childrenz)
+    condition = 'deviation >' + str(deviation/10)
+    print(deviation)
+
+while eval(condition):
     # Survival of the fittest
     if selection_method == 1:
         children = sorted(children, key=lambda x: x[2])
@@ -138,7 +149,14 @@ for itt in range(max_iterations):
         marker_size = 10
         plt.scatter(childrenx, childreny, marker_size, c='r')
         plt.show()
-
+    
+    if choice_stop == 1:
+        itt += 1
+    else:
+        childrenz = []
+        for child in children:
+            childrenz.append(child[2])
+        deviation = np.std(childrenz)
 # Fazendo as figuras
 
 childrenx = []
