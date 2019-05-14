@@ -1,19 +1,20 @@
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
-from math import sqrt, ceil
 
 def getChild(A, B):
-    #return (A[0], B[1])
-    x = (A[0]+B[0])//2
-    y = (A[1]+B[1])//2
+    if crossover_method == 1:
+        x = int((A[0]+B[0])//2)
+        y = int((A[1]+B[1])//2)
+    else:
+        x = A[0]
+        y = B[1]
     z = Z[x][y]
     return (x, y, z)
+    
 
 # Pegando parametros
-heightmap_size = 9000 #int(input('Tamanho do mapa:'))
+heightmap_size = 300 #int(input('Tamanho do mapa:'))
 max_iterations = 1000 #int(input('Numero maximo de iterações:))
 pop_size = 30#int(input('Tamanho da População: '))
 fittest_selection = 40#int(input('Quantos se reproduzirão por geração: '))
@@ -21,6 +22,9 @@ fittest_selection = int(pop_size*fittest_selection/100)
 mutation_chance = 10#int(input('Chance de Mutação(%): '))
 crossover_por_geracao = 50#int(input('Quantos crossover por geracao(%): '))
 crossover_por_geracao = int(pop_size*crossover_por_geracao/100)
+selection_method = 2 #1 = escolhe os maiores. 2 = probabilistico
+crossover_method = 1 #1 = escolhe media entre pontos, 2 = pega uma coordenada de cada
+mutation_method = 1 #1 = troca coordenadas, 2 = divide coordenadas por 2
 
 # Inventando um heightmap
 X = np.arange(0, heightmap_size, 1)
@@ -58,8 +62,18 @@ plt.show()
 
 for itt in range(max_iterations):
     # Survival of the fittest
-    children = sorted(children, key=lambda x: x[2])
-    fittest = children[fittest_selection:]
+    if selection_method == 1:
+        children = sorted(children, key=lambda x: x[2])
+        fittest = children[fittest_selection:]
+    else:
+        keys = []
+        [keys.append(x[2]) for x in children]
+        total = sum(keys)
+        for i in range(len(keys)):
+            keys[i] = keys[i]/total
+        idx = np.random.choice(pop_size, fittest_selection, keys)
+        fittest = np.array(children)[idx]
+        fittest = sorted(fittest, key=lambda x: x[2])
     childrencopy = children
     History.append(fittest[-1])
 
@@ -67,11 +81,19 @@ for itt in range(max_iterations):
     children = []
     [children.append(fitboy) for fitboy in fittest] #fittest vai direto pra prox geracao
     for i in range(crossover_por_geracao): # quem faz crossover mistura os pais
-        children.append(getChild(fittest[-i], fittest[-i-1]))
+        children.append(getChild(fittest[(-i)%fittest_selection], fittest[(-i-1)%fittest_selection]))
     for i in range(len(children)): # mutacao
         if np.random.randint(100) < mutation_chance:
             child = children.pop(i)
-            children.append((child[1], child[0], Z[child[1]][child[0]]))
+            if mutation_method == 1:
+                x = int(child[1])
+                y = int(child[0])
+                children.append((x, y, Z[x][y]))
+            else:
+                x = child[0]//2
+                y = child[1]//2
+                children.append((x, y, Z[x][y]))
+                
     for i in range(pop_size-len(children)): # completa ate pop_size
         children.append(childrencopy[i])
 
