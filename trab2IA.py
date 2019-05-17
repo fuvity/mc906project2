@@ -5,8 +5,8 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 from math import sqrt, ceil
 
+# Metodos de Crossover
 def getChild(A, B):
-    
     if crossover_method == 1:
         x = int((A[0]+B[0])//2)
         y = int((A[1]+B[1])//2)
@@ -15,7 +15,7 @@ def getChild(A, B):
         y = int(B[1])
     z = Z[x][y]
     return (x, y, z)
-    
+
 
 # Pegando parametros
 heightmap_size = 7000 #int(input('Tamanho do mapa:'))
@@ -29,7 +29,7 @@ crossover_por_geracao = int(pop_size*crossover_por_geracao/100)
 selection_method =  1#1 = escolhe os maiores. 2 = probabilistico
 crossover_method = 2 #1 = escolhe media entre pontos, 2 = pega uma coordenada de cada
 mutation_method = 2 #1 = troca coordenadas, 2 = divide coordenadas por 2
-choice_stop = 2 #1 = max iterations, 2 = std dev. tem de ser 1/30 do inicial
+choice_stop = 2 #1 = max iterations, 2 = std dev. tem de ser 1/2 do inicial
 
 # Inventando um heightmap
 X = np.arange(0, heightmap_size, 1)
@@ -66,14 +66,14 @@ marker_size = 10
 plt.scatter(childrenx, childreny, marker_size, c='r')
 plt.show()
 
-itt = 0 
+itt = 0
 if choice_stop == 1:
     condition = 'itt < max_iterations'
 else:
     deviation = np.std(childrenz)
     deviationtarget = np.std(childrenz)/2
     condition = 'deviation >' + str(deviationtarget)
-    
+
 while eval(condition):
     # Survival of the fittest
     if selection_method == 1:
@@ -95,14 +95,14 @@ while eval(condition):
     # Gerando novas criancas
     children = []
     [children.append(fitboy) for fitboy in fittest] #fittest vai direto pra prox geracao
-    
+
     if selection_method == 2:
         for i in range(len(fittest)): # quem faz crossover mistura os pais
-            children.append(getChild(fittest[-i], fittest[-i-1]))   
+            children.append(getChild(fittest[-i], fittest[-i-1]))
     else:
         for i in range(crossover_por_geracao): # quem faz crossover mistura os pais
             children.append(getChild(fittest[-i], fittest[-i-1]))
-    
+
     for i in range(len(children)): # mutacao
         if np.random.randint(100) < mutation_chance:
             child = children.pop(i)
@@ -115,7 +115,7 @@ while eval(condition):
             children.append((x,y,Z[x][y]))
     for i in range(pop_size-len(children)): # completa ate pop_size
         children.append(childrencopy[i])
-
+    #Gerando gráfico
     if itt == 2:
         ax = plt.figure()
         plt.title('Segunda geração')
@@ -129,7 +129,7 @@ while eval(condition):
         marker_size = 10
         plt.scatter(childrenx, childreny, marker_size, c='r')
         plt.show()
-
+    #Gerando gráfico
     if itt == 3:
         ax = plt.figure()
         plt.title('Terceira geração')
@@ -143,7 +143,7 @@ while eval(condition):
         marker_size = 10
         plt.scatter(childrenx, childreny, marker_size, c='r')
         plt.show()
-        
+    #Gerando gráfico
     if choice_stop == 1:
         if itt == max_iterations-1:
             ax = plt.figure()
@@ -158,16 +158,16 @@ while eval(condition):
             marker_size = 10
             plt.scatter(childrenx, childreny, marker_size, c='r')
             plt.show()
-        
+    #Verificando condições de parada
     itt =itt+ 1
-    if choice_stop == 2:    
+    if choice_stop == 2:
         childrenz = []
         for child in children:
             childrenz.append(child[2])
         deviation = np.std(childrenz)
-        
 
-if choice_stop == 2:    
+#Gerando gráfico
+if choice_stop == 2:
         ax = plt.figure()
         plt.title('Última geração')
         p = plt.imshow(Z, cmap=cm.viridis)
@@ -181,7 +181,7 @@ if choice_stop == 2:
         plt.scatter(childrenx, childreny, marker_size, c='r')
         plt.show()
 
-
+#Gerando gráfico
 childrenx = []
 childreny = []
 contador = []
@@ -198,7 +198,6 @@ for fitboy in History:
     i += 1
     contadorr += 5
 marker_size = 10
-
 
 plt.plot(contadorsingle[:30],childrenz[:30])
 plt.show()
